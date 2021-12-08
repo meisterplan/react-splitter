@@ -76,6 +76,8 @@ export type SplitProps = {
     drag: string;
   };
 
+  absoluteSize?: boolean;
+
   /**
    * Raised when the splitter moves to provide the primary size.
    * When the user has adjusted the splitter, this will be a percentage.
@@ -134,7 +136,7 @@ export const Split = (props: React.PropsWithChildren<SplitProps>): JSX.Element =
     [horizontal, splitterMeasuredDimensions]
   );
 
-  const [percent, setPercent] = React.useState<number | undefined>(undefined);
+  const [size, setSize] = React.useState<number | undefined>(undefined);
 
   const [clientStart, setClientStart] = React.useState(0);
   const [primaryStart, setPrimaryStart] = React.useState(0);
@@ -142,9 +144,9 @@ export const Split = (props: React.PropsWithChildren<SplitProps>): JSX.Element =
 
   React.useEffect(() => {
     if (onSplitChanged) {
-      onSplitChanged(percent !== undefined ? `${percent}%` : initialPrimarySize);
+      onSplitChanged(size !== undefined ? `${size}${props.absoluteSize ? 'px' : '%'}` : initialPrimarySize);
     }
-  }, [percent, initialPrimarySize]);
+  }, [size, initialPrimarySize]);
 
   React.useEffect(() => {
     if (onMeasuredSizesChanged) {
@@ -184,7 +186,7 @@ export const Split = (props: React.PropsWithChildren<SplitProps>): JSX.Element =
       const primarySize = primaryStart + (position - clientStart);
       const newPrimary = Math.max(0, Math.min(primarySize, currentContentSize));
       const newPercent = (newPrimary / currentContentSize) * 100;
-      setPercent(newPercent);
+      setSize(props.absoluteSize ? newPrimary : newPercent);
     }
   };
 
@@ -194,7 +196,7 @@ export const Split = (props: React.PropsWithChildren<SplitProps>): JSX.Element =
   };
 
   const onSplitDoubleClick = () => {
-    resetOnDoubleClick && setPercent(undefined);
+    resetOnDoubleClick && setSize(undefined);
   };
 
   const children = React.Children.toArray(props.children);
@@ -202,7 +204,7 @@ export const Split = (props: React.PropsWithChildren<SplitProps>): JSX.Element =
   const secondaryChild = children.length > 1 ? children[1] : <div />;
 
   const renderSizes = {
-    primary: percent !== undefined ? `${percent}%` : initialPrimarySize,
+    primary: size !== undefined ? `${size}${props.absoluteSize ? 'px' : '%'}` : initialPrimarySize,
     minPrimary: minPrimarySize ?? '0px',
     minSecondary: minSecondarySize ?? '0px',
   };
